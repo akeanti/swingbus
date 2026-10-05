@@ -1,0 +1,3 @@
+* text=auto eol=lf
+*.m -text linguist-vendored
+*.png binary
