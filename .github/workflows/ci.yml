@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  MPLBACKEND: Agg
+
+jobs:
+  quality:
+    name: Lint, format and types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e ".[dev]"
+      - run: ruff check --output-format=github .
+      - run: ruff format --check .
+      - run: mypy
+
+  test:
+    name: Python ${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e ".[test,plot]"
+      - run: python -m pytest -m "not network" --cov=swingbus --cov-report=term --cov-report=xml
+      - if: matrix.os == 'ubuntu-latest' && matrix.python == '3.13'
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage
+          path: coverage.xml
+
+  oldest:
+    name: Oldest supported NumPy and SciPy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.10"
+      - run: python -m pip install "numpy==1.24.*" "scipy==1.12.*" "pytest>=8" "PYPOWER>=5.1.16"
+      - run: python -m pip install --no-deps -e .
+      - run: python -m pytest -m "not network" -p no:cacheprovider --ignore=tests/test_plot.py
+
+  latest:
+    name: Pre-release NumPy and SciPy
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install --pre --upgrade numpy scipy
+      - run: python -m pip install -e ".[test]"
+      - run: python -m pytest -m "not network" --ignore=tests/test_plot.py
+
+  examples:
+    name: Examples and command line
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install -e ".[plot]"
+      - run: |
+          python examples/01_power_flow.py
+          python examples/02_convergence.py
+          python examples/03_n1_screening.py
+          python examples/04_prices.py
+          python examples/05_cascade_dataset.py 20
+          python examples/06_network_map.py
+      - run: |
+          swingbus pf case118 --qlim
+          swingbus opf pglib_opf_case5_pjm
+          swingbus n1 pglib_opf_case24_ieee_rts --from-opf --ac
+          swingbus cascade pglib_opf_case118_ieee --from-opf -o 8 5 -o 26 30
+          swingbus pf pglib_opf_case1354_pegase --init flat
+
+  data:
+    name: PGLib-OPF downloads
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install -e ".[test]"
+      - run: python -m pytest -m network
+
+  package:
+    name: Build and install the wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build twine
+      - run: python -m build
+      - run: python -m twine check --strict dist/*
+      - run: |
+          python -m venv /tmp/clean
+          /tmp/clean/bin/pip install dist/*.whl
+          cd /tmp
+          /tmp/clean/bin/swingbus pf case300
+          /tmp/clean/bin/python -c "import swingbus; assert len(swingbus.bundled_cases()) == 15"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/

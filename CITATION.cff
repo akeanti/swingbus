@@ -1,0 +1,54 @@
+cff-version: 1.2.0
+message: If you use swingbus in your work, please cite it with these metadata.
+title: "swingbus: power flow, contingency analysis and DC optimal power flow in Python"
+type: software
+authors:
+  - family-names: Essamit
+    given-names: Elmehdi
+repository-code: https://github.com/akeanti/swingbus
+url: https://github.com/akeanti/swingbus
+abstract: >-
+  swingbus is a Python library for steady-state analysis of transmission
+  grids. It reads MATPOWER case files and provides Newton-Raphson,
+  fast-decoupled, Gauss-Seidel and DC power flow, PTDF and LODF
+  sensitivity factors, DC and AC N-1 contingency screening, DC optimal
+  power flow with locational marginal prices, economic dispatch, and a DC
+  cascading failure simulator for building graph datasets. Results are
+  validated against PYPOWER on the IEEE and PGLib-OPF test systems.
+keywords:
+  - power systems
+  - power flow
+  - optimal power flow
+  - contingency analysis
+  - cascading failures
+  - locational marginal prices
+  - MATPOWER
+  - PGLib-OPF
+license: MIT
+version: 0.1.0
+date-released: "2026-10-05"
+references:
+  - type: article
+    title: "MATPOWER: Steady-State Operations, Planning, and Analysis Tools for Power Systems Research and Education"
+    authors:
+      - family-names: Zimmerman
+        given-names: Ray D.
+      - family-names: Murillo-Sanchez
+        given-names: Carlos E.
+      - family-names: Thomas
+        given-names: Robert J.
+    journal: IEEE Transactions on Power Systems
+    volume: 26
+    issue: 1
+    start: 12
+    end: 19
+    year: 2011
+    doi: 10.1109/TPWRS.2010.2051168
+  - type: report
+    title: "The Power Grid Library for Benchmarking AC Optimal Power Flow Algorithms"
+    authors:
+      - family-names: Babaeinejadsarookolaee
+        given-names: Sogol
+      - name: "IEEE PES Task Force on Benchmarks for Validation of Emerging Power System Algorithms"
+    year: 2019
+    url: https://arxiv.org/abs/1908.02788

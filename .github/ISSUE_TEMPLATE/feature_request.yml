@@ -1,0 +1,22 @@
+name: Feature request
+description: A new analysis, model or data format
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you want to compute
+      description: The study you are trying to run and what is missing for it.
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: Method and references
+      description: Formulation, paper or textbook section, and any reference implementation to validate against.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contribution
+      options:
+        - label: I can help implement or test this

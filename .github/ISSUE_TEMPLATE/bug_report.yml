@@ -1,0 +1,31 @@
+name: Bug report
+description: Wrong numbers, a crash, or a case that should converge but does not
+labels: [bug]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened
+      description: The error message, or the values you expected and the values you got.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: A short script. Name the case, or attach or link the .m file.
+      render: python
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: Reference result
+      description: If you compared against MATPOWER, PYPOWER, pandapower or a textbook, paste their numbers.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `python -c "import sys, numpy, scipy, swingbus; print(sys.version, numpy.__version__, scipy.__version__, swingbus.__version__)"`
+    validations:
+      required: true
